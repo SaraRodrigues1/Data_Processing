@@ -4,20 +4,9 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 const users = [];
+const authenticateToken = require('../middleware/authenticateToken'); // Import the middleware
 
-/* Middleware/tokens for later
-const authenticateToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
-
-    jwt.verify(token, 'secretKey', (err, user) => {
-        if (err) return res.status(403).json({ error: 'Invalid token.' });
-        req.user = user;
-        next();
-    });
-};*/
-
-//Register a new account
+// Register a new account
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
@@ -37,8 +26,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({ message: 'User registered successfully.', userId: newUser.id });
 });
 
-
-//Log in 
+// Log in
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -56,14 +44,13 @@ router.post('/login', async (req, res) => {
     res.json({ message: 'Login successful.', token });
 });
 
-//Log out 
+// Log out
 router.post('/logout', authenticateToken, (req, res) => {
     // No actual token invalidation here since it's stateless JWT
     res.json({ message: 'Logout successful.' });
 });
 
-
-//Get current
+// Get current user
 router.get('/me', authenticateToken, (req, res) => {
     res.json({ user: req.user });
 });
