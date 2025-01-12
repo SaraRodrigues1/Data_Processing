@@ -3,6 +3,9 @@ const http = require('http');
 const jwt = require('jsonwebtoken'); 
 const bcrypt = require('bcrypt'); 
 const mysql = require('mysql');
+const path = require('path');
+const fs = require('fs');
+require('dotenv').config(); 
 
 const app = express(); 
 
@@ -22,17 +25,22 @@ const db = mysql.createPool({
 
 app.locals.db = db;
 
-function loadRoutes(directory) {
-    const routesPath = path.join(__dirname, directory);
-    fs.readdirSync(routesPath).forEach((file) => {
-        if (file.endsWith('Routes.js')) { 
-            const route = require(path.join(routesPath, file));
-            route(app); 
-        }
-    });
-}
+app.use(express.json()); 
 
-loadRoutes('routes');
+const accountsRouter = require('./routes/accountRoutes');
+const genreRouter = require('./routes/genreRoutes');
+const historyRouter = require('./routes/historyRoutes');
+const loginRouter = require('./routes/loginRoutes');
+const mediaRouter = require('./routes/mediaRoutes');
+const profileRouter = require('./routes/profileRoutes');
+
+
+app.use('/api/accounts', accountsRouter);  
+app.use('/api/genres', genreRouter);     
+app.use('/api/history', historyRouter);  
+app.use('/api/login', loginRouter);     
+app.use('/api/media', mediaRouter);    
+app.use('/api/profiles', profileRouter);  
 
 const server = http.createServer(app);
 

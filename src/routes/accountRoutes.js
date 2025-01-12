@@ -68,4 +68,6 @@ router.put('/:id/block', (req, res) => {
     res.json({ message: `Account ${account.accountBlocked ? 'blocked' : 'unblocked'} successfully.`, account });
 });
 
-module.exports = router
+module.exports = (app) => {
+    app.use('/api/accounts', router); 
+};
