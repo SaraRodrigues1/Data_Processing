@@ -107,5 +107,5 @@ BEGIN TRY
 END TRY
 BEGIN CATCH
     PRINT 'An error occurred while creating the index on SeriesID column in the WatchingSeries table.';
-    PRINT ERROR_MESSAGE();
+    PRINT ERROR_MsSSAGE();
 END CATCH;

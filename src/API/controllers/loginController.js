@@ -1,26 +1,38 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const db = require('./db'); 
+const db = require('../db');
+const json2xml = require('json2xml');
 
-// Login
+const sendJSONResponse = (res, statusCode, data) => {
+    res.status(statusCode).json(data);
+};
+
+const sendXMLResponse = (res, statusCode, data) => {
+    const xmlData = json2xml(data);
+    res.header('Content-Type', 'application/xml').status(statusCode).send(xmlData);
+};
+
 exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     try {
         const [user] = await db.execute('SELECT * FROM Account WHERE Email = ?', [email]);
-        if (user.length === 0) return res.status(404).json({ error: 'User not found.' });
+        if (user.length === 0) return sendJSONResponse(res, 404, { error: 'User not found.' });
 
         const isPasswordValid = await bcrypt.compare(password, user[0].Password);
-        if (!isPasswordValid) return res.status(401).json({ error: 'Invalid password.' });
+        if (!isPasswordValid) return sendJSONResponse(res, 401, { error: 'Invalid password.' });
 
-        const token = jwt.sign({ userId: user[0].UserID }, JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token, message: 'Login successful.' });
+        const token = jwt.sign({ userId: user[0].UserID }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const response = { token, message: 'Login successful.' };
+        if (req.accepts('xml')) {
+            return sendXMLResponse(res, 200, response);
+        }
+        sendJSONResponse(res, 200, response);
     } catch (error) {
-        res.status(500).json({ error: 'Error during login.', details: error.message });
+        sendJSONResponse(res, 500, { error: 'Error during login.', details: error.message });
     }
 };
 
-// Registration
 exports.register = async (req, res) => {
     const { email, password } = req.body;
 
@@ -30,13 +42,16 @@ exports.register = async (req, res) => {
             'INSERT INTO Account (Email, Password) VALUES (?, ?)',
             [email, hashedPassword]
         );
-        res.status(201).json({ message: 'User registered successfully.', UserID: result.insertId });
+        const response = { message: 'User registered successfully.', UserID: result.insertId };
+        if (req.accepts('xml')) {
+            return sendXMLResponse(res, 201, response);
+        }
+        sendJSONResponse(res, 201, response);
     } catch (error) {
-        res.status(500).json({ error: 'Error during registration.', details: error.message });
+        sendJSONResponse(res, 500, { error: 'Error during registration.', details: error.message });
     }
 };
 
-// Verify 
 exports.verifyAccount = async (req, res) => {
     const { userId } = req.body;
 
@@ -45,9 +60,13 @@ exports.verifyAccount = async (req, res) => {
             'UPDATE Account SET AccountVerified = 1 WHERE UserID = ?',
             [userId]
         );
-        if (result.affectedRows === 0) return res.status(404).json({ error: 'User not found.' });
-        res.json({ message: 'Account verified successfully.' });
+        if (result.affectedRows === 0) return sendJSONResponse(res, 404, { error: 'User not found.' });
+        const response = { message: 'Account verified successfully.' };
+        if (req.accepts('xml')) {
+            return sendXMLResponse(res, 200, response);
+        }
+        sendJSONResponse(res, 200, response);
     } catch (error) {
-        res.status(500).json({ error: 'Error during verification.', details: error.message });
+        sendJSONResponse(res, 500, { error: 'Error during verification.', details: error.message });
     }
 };

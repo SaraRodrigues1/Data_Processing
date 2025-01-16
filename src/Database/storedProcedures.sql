@@ -30,7 +30,6 @@ BEGIN
     BEGIN TRY
         IF EXISTS (SELECT 1 FROM Account WHERE UserID = @UserID)
         BEGIN
-            /* Check if the user has not reached maximum profile limit */
             IF (SELECT COUNT(*) FROM Profile WHERE UserID = @UserID) < 4
             BEGIN
                 INSERT INTO Profile (UserID, Name, Age, Language) VALUES (@UserID, @Name, @Age, @Language);
