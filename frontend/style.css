@@ -1,0 +1,224 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #141414;
+    color: #fff;
+}
+
+header {
+    background-color: #e50914;
+    padding: 15px;
+    text-align: center;
+}
+
+header > h1 {
+    margin: 0;
+}
+
+header > nav > ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+}
+
+header > nav > ul > li {
+    margin: 0 15px;
+}
+
+header > nav > ul > li > a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: bold;
+}
+
+main {
+    padding: 20px;
+}
+
+#profiles {
+    height: 200px;
+}
+
+#profiles > h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profileContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    justify-items: center;
+}
+
+.profile > img {
+    width: 70%;
+    height: 20%;
+}
+
+.profile > img:hover {
+    transform: scale(1.1);
+}
+
+.profileContainer > button {
+    background-color: #e50914;
+    border: none;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+    width: 20%;
+    height: 15%;
+}
+
+.profileContainer > button:hover {
+    background-color: #f40612;
+}
+
+.actionButtons {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+}
+
+.actionButtons button {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.actionButtons button:hover {
+    text-decoration: underline;
+}
+
+.addButton {
+    background-color: #e50914;
+    border: none;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+    width: 20%;
+}
+
+.addButton:hover {
+    background-color: #f40612;
+}
+
+.historyContainer, .recommendedContainer, .seriesContainer, .moviesWatchingContainer, .seriesWatchingContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+    text-align: center;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-left: 190px;
+    margin-right: 190px;
+}
+
+.historyElement, .recommendedElement, .seriesElement, .moviesWatchingElement, .seriesWatchingElement {
+    text-align: center;
+}
+
+.historyElement > img, .recommendedElement > img, .seriesElement > img, .moviesWatchingElement > img, .seriesWatchingElement > img {
+    width: 100%;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.historyElement > img:hover, .recommendedElement > img:hover, .seriesElement > img:hover, .moviesWatchingElement > img:hover, .seriesWatchingElement > img:hover {
+    transform: scale(1.05);
+}
+
+.historyElement > p, .recommendedElement > p, .seriesElement > p, .moviesWatchingElement > p, .seriesWatchingElement > p {
+    margin-top: 10px;
+}
+
+#subscriptions {
+    margin-top: 10px;
+}
+
+#subscriptions > h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#subscriptions > ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px auto;
+    max-width: 300px;
+}
+
+#subscriptions > ul > li {
+    background-color: #e50914;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #e50914;
+    margin-top: 20px;
+}
+
+h1 {
+    color: #e50914;
+    padding: 15px 15px 150px 15px;
+    text-align: center;
+}
+
+h2 {
+    color: white;
+    font-size: 1.5em;
+    margin: 0 200px 0 200px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 300px;
+    margin: 0 auto;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+}
+
+.login-form button {
+    width: 100px;
+    padding: 10px;
+    background-color: #e50914;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 15px;
+}
+
+.login-form button:hover {
+    background-color: #f40612;
+}

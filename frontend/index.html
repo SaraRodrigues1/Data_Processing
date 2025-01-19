@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header> 
+        <h1> Netflix </h1>
+        <nav> 
+            <ul> 
+                <li><a href="#"> PROFILES </a></li>
+                <li><a href="#"> MOVIES </a></li>
+                <li><a href="#"> SUBSCRIPTIONS </a></li>
+            </ul>
+        </nav>
+    </header>
+    <main> 
+        <section id="profiles"> 
+            <h2>Your profiles</h2>
+            <div class="profileContainer">
+                <div class="profile">
+                    <img src="img/netflixProfile1.jpg" alt="profile1">
+                    <p>Profile 1</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+                <div class="profile">
+                    <img src="img/netflixProfile2.jpg" alt="profile2" width="10%" height="10%">
+                    <p>Profile 2</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+                <button id="addProfile" class="addButton">Add Profile</button>
+            </div>
+        </section>
+
+        <section id="history">
+            <h2>Your History</h2>
+            <div class="historyContainer">
+                <div class="historyElement">
+                    <img src="img/fastAndFurious.jpg" alt="movie1">
+                    <p>Fast and Furious</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+                <div class="historyElement">
+                    <img src="img/howToLoseAGuy.jpg" alt="movie2">
+                    <p>How to Lose a Guy in 10 Days</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+                <div class="historyElement">
+                    <img src="img/httyd.jpg" alt="movie3">
+                    <p>How to Train Your Dragon</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+                <div class="historyElement">
+                    <img src="img/mammaMia.jpg" alt="movie4">
+                    <p>Mamma Mia!</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <button id="addHistory" class="addButton">Add to History</button>
+        </section>
+
+        <section id="recommended">
+            <h2>Recommended for You</h2>
+            <div class="recommendedContainer">
+                <div class="recommendedElement">
+                    <img src="img/fastAndFurious.jpg" alt="movie1">
+                    <p>Fast and Furious</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <button id="addRecommended" class="addButton">Add to Recommended</button>
+        </section>
+
+        <section id="series">
+            <h2>Popular Series</h2>
+            <div class="seriesContainer">
+                <div class="seriesElement">
+                    <img src="img/fastAndFurious.jpg" alt="movie1">
+                    <p>Fast and Furious</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <button id="addSeries" class="addButton">Add Series</button>
+        </section>
+
+        <section id="movies-watching">
+            <h2>Movies You Are Watching</h2>
+            <div class="moviesWatchingContainer">
+                <div class="moviesWatchingElement">
+                    <img src="img/fastAndFurious.jpg" alt="movie1">
+                    <p>Fast and Furious</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+            </div>
+            <button id="addMoviesWatching" class="addButton">Add Movie</button>
+        </section>
+
+        <section id="series-watching">
+            <h2>Series You Are Watching</h2>
+            <div class="seriesWatchingContainer">
+                <div class="seriesWatchingElement">
+                    <img src="img/fastAndFurious.jpg" alt="movie1">
+                    <p>Fast and Furious</p>
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </div>
+
+            </div>
+            <button id="addSeriesWatching" class="addButton">Add Series</button>
+        </section>
+
+        <section id="subscriptions">
+            <h2>Subscription Plans</h2>
+            <ul>
+                <li>SD: €7.99/month
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </li>
+                <li>HD: €10.99/month
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </li>
+                <li>UHD: €13.99/month
+                    <div class="actionButtons">
+                        <button class="update">Update</button>
+                        <button class="delete">Delete</button>
+                    </div>
+                </li>
+            </ul>
+            <button id="addSubscription" class="addButton">Add Subscription</button>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Netflix</p>
+    </footer>
+    <script src="app.js"></script>
+</body>
+</html>
