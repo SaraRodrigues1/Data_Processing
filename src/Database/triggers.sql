@@ -1,11 +1,13 @@
+DELIMITER $$
+
 /* Log profile Updates */
 CREATE TRIGGER after_profile_update
 AFTER UPDATE ON Profile
 FOR EACH ROW
-BEGIN 
+BEGIN
     INSERT INTO AuditLog(ProfileID, ChangedAt, OldName, NewName, OldAge, NewAge)
-    VALUES(OLD.ProfileID, NOW(), OLD.Name, NEW.Name, OLD.Age, NEW.Age);
-END;
+    VALUES (OLD.ProfileID, NOW(), OLD.Name, NEW.Name, OLD.Age, NEW.Age);
+END$$
 
 /* Track Movie/Serie Watching */
 /* Watching a movie */
@@ -16,7 +18,7 @@ BEGIN
     UPDATE Film
     SET TimeWatched = TimeWatched + 1
     WHERE FilmID = NEW.FilmID;
-END;
+END$$
 
 /* Watching a serie */
 CREATE TRIGGER after_watch_series
@@ -24,9 +26,9 @@ AFTER UPDATE ON WatchingSeries
 FOR EACH ROW
 BEGIN
     UPDATE Series
-    SET TimesWatched = TimesWatched + 1;
+    SET TimesWatched = TimesWatched + 1
     WHERE SeriesID = NEW.SeriesID;
-END;
+END$$
 
 /* Restrict Inappropriate Content */
 /* For movie */
@@ -44,7 +46,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Cannot add movie: Content exceeds age restriction.';
     END IF;
-END;
+END$$
 
 /* For Series */
 CREATE TRIGGER before_add_series_to_watchlist
@@ -61,7 +63,7 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Cannot add series: Content exceeds age restrictions.';
     END IF;
-END;
+END$$
 
 /* Audit Subscriptions */
 CREATE TRIGGER after_subscription_update 
@@ -69,14 +71,14 @@ AFTER UPDATE ON Subscription
 FOR EACH ROW
 BEGIN
     INSERT INTO SubscriptionAudit(SubscriptionID, ChangedAt, OldType, NewType, OldDiscount, NewDiscount)
-    VALUES(OLD.SubscriptionID, NOW(), OLD.SubscriptionType, NEW.SubscriptionType, OLD.Discount, NEW.Discount);
-END;
+    VALUES (OLD.SubscriptionID, NOW(), OLD.SubscriptionType, NEW.SubscriptionType, OLD.Discount, NEW.Discount);
+END$$
 
 /* Prevent Deleting Linked Data */
 CREATE TRIGGER before_profile_delete
 BEFORE DELETE ON Profile
 FOR EACH ROW
-BEGIN 
+BEGIN
     DECLARE watchlist_count INT;
 
     SELECT COUNT(*) INTO watchlist_count FROM WatchingFilm WHERE ProfileID = OLD.ProfileID;
@@ -85,4 +87,6 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Cannot delete profile: Active watchlist items exist.';
     END IF;
-END;
+END$$
+
+DELIMITER ;

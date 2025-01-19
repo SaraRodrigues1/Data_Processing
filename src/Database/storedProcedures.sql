@@ -1,66 +1,82 @@
-CREATE PROCEDURE UserRegistration
-    @Email VARCHAR(255),
-    @Password VARCHAR(255)
-AS
-BEGIN
-    BEGIN TRY
-        IF NOT EXISTS (SELECT 1 FROM Account WHERE Email = @Email)
-        BEGIN
-            INSERT INTO Account (Email, Password) VALUES (@Email, @Password);
-            PRINT 'User registered successfully.';
-        END
-        ELSE
-        BEGIN
-            THROW 51000, 'Email already exists.', 1;
-        END
-    END TRY
-    BEGIN CATCH
-        PRINT 'An error occurred during user registration: ' + ERROR_MESSAGE();
-    END CATCH;
-END;
+DELIMITER $$
 
- /* create profile */
-CREATE PROCEDURE CreateProfile
-    @UserID INT,
-    @Name VARCHAR(100),
-    @Age INT,
-    @Language VARCHAR(50)
-AS
+/* User Registration */
+CREATE PROCEDURE UserRegistration(
+    IN Email VARCHAR(255),
+    IN Password VARCHAR(255)
+)
 BEGIN
-    BEGIN TRY
-        IF EXISTS (SELECT 1 FROM Account WHERE UserID = @UserID)
-        BEGIN
-            IF (SELECT COUNT(*) FROM Profile WHERE UserID = @UserID) < 4
-            BEGIN
-                INSERT INTO Profile (UserID, Name, Age, Language) VALUES (@UserID, @Name, @Age, @Language);
-                PRINT 'Profile created successfully.';
-            END
-            ELSE
-            BEGIN
-                THROW 51001, 'User has reached maximum profile limit.', 1;
-            END
-        END
-        ELSE
-        BEGIN
-            THROW 51002, 'User not found.', 1;
-        END
-    END TRY
-    BEGIN CATCH
-        PRINT 'An error occurred during profile creation: ' + ERROR_MESSAGE();
-    END CATCH;
-END;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Handle error
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'An error occurred during user registration.';
+    END;
 
- /* change language */
-CREATE PROCEDURE ChangePreferredLanguage
-    @ProfileID INT,
-    @NewLanguage VARCHAR(50)
-AS
+    START TRANSACTION;
+    
+    IF NOT EXISTS (SELECT 1 FROM Account WHERE Email = Email) THEN
+        INSERT INTO Account (Email, Password) VALUES (Email, Password);
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Email already exists.';
+    END IF;
+    
+    COMMIT;
+END$$
+
+/* Create Profile */
+CREATE PROCEDURE CreateProfile(
+    IN UserID INT,
+    IN Name VARCHAR(100),
+    IN Age INT,
+    IN Language VARCHAR(50)
+)
 BEGIN
-    BEGIN TRY
-        UPDATE Profile SET Language = @NewLanguage WHERE ProfileID = @ProfileID;
-        PRINT 'Preferred language changed successfully.';
-    END TRY
-    BEGIN CATCH
-        PRINT 'An error occurred while changing preferred language: ' + ERROR_MESSAGE();
-    END CATCH;
-END;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'An error occurred during profile creation.';
+    END;
+
+    START TRANSACTION;
+
+    IF EXISTS (SELECT 1 FROM Account WHERE UserID = UserID) THEN
+        IF (SELECT COUNT(*) FROM Profile WHERE UserID = UserID) < 4 THEN
+            INSERT INTO Profile (UserID, Name, Age, Language) VALUES (UserID, Name, Age, Language);
+        ELSE
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'User has reached maximum profile limit.';
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'User not found.';
+    END IF;
+
+    COMMIT;
+END$$
+
+/* Change Preffered Language */
+CREATE PROCEDURE ChangePreferredLanguage(
+    IN ProfileID INT,
+    IN NewLanguage VARCHAR(50)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'An error occurred while changing the preferred language.';
+    END;
+
+    START TRANSACTION;
+    
+    UPDATE Profile
+    SET Language = NewLanguage
+    WHERE ProfileID = ProfileID;
+
+    COMMIT;
+END$$
+DELIMITER ;
