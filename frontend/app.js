@@ -369,61 +369,86 @@ const fetchHistory = async () => {
 
 fetchHistory();
 
-async function login(email, password) {
-  try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, application/xml'  
-          },
-          body: JSON.stringify({ email, password })
-      });
+document.getElementById('loginButton').addEventListener('click', async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
 
-      const data = await handleResponse(response);
-      console.log('Login response:', data);
-      return data;
-  } catch (error) {
-      console.error('Error during login:', error);
+  if (email && password) {
+      try {
+          const result = await login(email, password);
+          console.log('Login Result:', result);
+      } catch (error) {
+          console.error('Login Error:', error);
+      }
+  } else {
+      alert('Please enter both email and password.');
   }
+});
+
+document.getElementById('registerButton').addEventListener('click', async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  if (email && password) {
+      try {
+          const result = await register(email, password);
+          console.log('Register Result:', result);
+      } catch (error) {
+          console.error('Registration Error:', error);
+      }
+  } else {
+      alert('Please enter both email and password.');
+  }
+});
+
+document.getElementById('verifyButton').addEventListener('click', async () => {
+  const email = document.getElementById('email').value; 
+  if (email) {
+      try {
+          const result = await verifyAccount(email); 
+          console.log('Verify Result:', result);
+      } catch (error) {
+          console.error('Verification Error:', error);
+      }
+  } else {
+      alert('Please enter your email to verify.');
+  }
+});
+
+async function login(email, password) {
+  const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, application/xml'
+      },
+      body: JSON.stringify({ email, password })
+  });
+  return handleResponse(response);
 }
 
 async function register(email, password) {
-  try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, application/xml'  
-          },
-          body: JSON.stringify({ email, password })
-      });
-
-      const data = await handleResponse(response);
-      console.log('Registration response:', data);
-      return data;
-  } catch (error) {
-      console.error('Error during registration:', error);
-  }
+  const response = await fetch(`${API_BASE_URL}/register`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, application/xml'
+      },
+      body: JSON.stringify({ email, password })
+  });
+  return handleResponse(response); 
 }
 
 async function verifyAccount(userId) {
-  try {
-      const response = await fetch(`${API_BASE_URL}/verify`, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, application/xml' 
-          },
-          body: JSON.stringify({ userId })
-      });
-
-      const data = await handleResponse(response);
-      console.log('Account verification response:', data);
-      return data;
-  } catch (error) {
-      console.error('Error during account verification:', error);
-  }
+  const response = await fetch(`${API_BASE_URL}/verify`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json, application/xml'
+      },
+      body: JSON.stringify({ userId })
+  });
+  return handleResponse(response); 
 }
 
 async function fetchAllProfiles() {
