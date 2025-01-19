@@ -216,7 +216,7 @@ h2 {
     border-radius: 5px;
     font-size: 1em;
     cursor: pointer;
-    padding: 5px;
+    margin: 15px;
 }
 
 .login-form button:hover {

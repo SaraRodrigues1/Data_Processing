@@ -590,60 +590,60 @@ const fetchRecommended = async () => {
   }
 };
 
-async function createRecommendation(profileId, mediaType, mediaId) {
+const addRecommendation = async (recommendationData) => {
   try {
       const response = await fetch(`${API_BASE_URL}/recommendations`, {
           method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, application/xml'  
-          },
-          body: JSON.stringify({ profileId, mediaType, mediaId })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(recommendationData),
       });
-
-      const data = await handleResponse(response);
-      console.log('Recommendation creation response:', data);
-      return data;
+      const recommendation = await handleResponse(response);
+      fetchRecommended(); 
   } catch (error) {
-      console.error('Error creating recommendation:', error);
+      console.error("Error adding recommendation:", error);
   }
-}
+};
 
-async function updateRecommendation(recommendationId, mediaType, mediaId) {
+const updateRecommendation = async (recommendationId, updatedData) => {
   try {
       const response = await fetch(`${API_BASE_URL}/recommendations/${recommendationId}`, {
           method: 'PUT',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, application/xml'  
-          },
-          body: JSON.stringify({ mediaType, mediaId })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData),
       });
-
-      const data = await handleResponse(response);
-      console.log('Recommendation update response:', data);
-      return data;
+      const recommendation = await handleResponse(response);
+      fetchRecommended(); 
   } catch (error) {
-      console.error('Error updating recommendation:', error);
+      console.error("Error updating recommendation:", error);
   }
-}
+};
 
-async function deleteRecommendation(recommendationId) {
+const deleteRecommendation = async (recommendationId) => {
   try {
       const response = await fetch(`${API_BASE_URL}/recommendations/${recommendationId}`, {
           method: 'DELETE',
-          headers: {
-              'Accept': 'application/json, application/xml'
-          }
       });
-
-      const data = await handleResponse(response);
-      console.log('Recommendation deletion response:', data);
-      return data;
+      const result = await handleResponse(response);
+      fetchRecommended(); 
   } catch (error) {
-      console.error('Error deleting recommendation:', error);
+      console.error("Error deleting recommendation:", error);
   }
-}
+};
+
+document.querySelector("#addRecommendation").addEventListener("click", () => {
+  const newRecommendationData = { title: "New Recommended Movie", imageUrl: "new_recommendation.jpg" }; 
+  addRecommendation(newRecommendationData);
+});
+
+document.querySelector(".recommendedContainer").addEventListener("click", (event) => {
+  const recommendationId = event.target.dataset.id;
+  if (event.target.classList.contains("update")) {
+      const updatedData = { title: "Updated Recommended Movie", imageUrl: "updated_recommendation.jpg" }; 
+      updateRecommendation(recommendationId, updatedData);
+  } else if (event.target.classList.contains("delete")) {
+      deleteRecommendation(recommendationId);
+  }
+});
 
 fetchRecommended();
 
