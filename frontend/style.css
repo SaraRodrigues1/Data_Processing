@@ -41,7 +41,6 @@ main {
     padding: 20px;
 }
 
-/* Profile Section */
 #profiles {
     height: 200px;
 }
@@ -72,7 +71,7 @@ main {
     background-color: #e50914;
     border: none;
     padding: 10px 20px;
-    color:#fff;
+    color: #fff;
     font-size: 16px;
     cursor: pointer;
     border-radius: 5px;
@@ -85,17 +84,40 @@ main {
     background-color: #f40612;
 }
 
-/* Movies Section */
-#movies {
-    margin-top: 10px;
+.actionButtons {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
 }
 
-#movies > h2 {
-    text-align: center;
-    margin-bottom: 20px;
+.actionButtons button {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
 }
 
-.movieContainer {
+.actionButtons button:hover {
+    text-decoration: underline;
+}
+
+.addButton {
+    background-color: #e50914;
+    border: none;
+    padding: 10px 20px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+    width: 20%;
+}
+
+.addButton:hover {
+    background-color: #f40612;
+}
+
+.historyContainer, .recommendedContainer, .seriesContainer, .moviesWatchingContainer, .seriesWatchingContainer {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
@@ -107,18 +129,21 @@ main {
     margin-right: 190px;
 }
 
-.movie > img {
+.historyElement, .recommendedElement, .seriesElement, .moviesWatchingElement, .seriesWatchingElement {
+    text-align: center;
+}
+
+.historyElement > img, .recommendedElement > img, .seriesElement > img, .moviesWatchingElement > img, .seriesWatchingElement > img {
     width: 100%;
     border-radius: 10px;
     transition: transform 0.3s ease;
 }
 
-.movie > img:hover {
+.historyElement > img:hover, .recommendedElement > img:hover, .seriesElement > img:hover, .moviesWatchingElement > img:hover, .seriesWatchingElement > img:hover {
     transform: scale(1.05);
 }
 
-.movie > p {
-    text-align: center;
+.historyElement > p, .recommendedElement > p, .seriesElement > p, .moviesWatchingElement > p, .seriesWatchingElement > p {
     margin-top: 10px;
 }
 
@@ -152,53 +177,4 @@ footer {
     padding: 10px 0;
     background-color: #e50914;
     margin-top: 20px;
-}
-
-/*login*/
-
-h2 {
-    color: white;
-    font-size: 1.5em;
-    margin: 0 200px 0 200px;
-}
-
-
-.login-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 300px;
-    margin: 0 200px 0 200px;
-}
-
-.login-form input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 5px;
-}
-
-.login-form button {
-    width: 100px;
-    padding: 10px;
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 1em;
-    cursor: pointer;
-}
-
-.login-form button:hover {
-    background-color: darkred;
-    display: flex;
-    justify-content: center;
-}
-
-h1{
-    color: #e50914;
-    padding: 15px 15px 150px 15px;
-    text-align: center;
 }

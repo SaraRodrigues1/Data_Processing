@@ -105,23 +105,31 @@ const deleteContentWarning = async (contentWarningId) => {
   }
 };
 
-exports.getAllContent = async (req, res) => {
+const fetchContent = async (type) => {
   try {
-      const [films] = await db.execute('SELECT * FROM Film');
-      const [series] = await db.execute('SELECT * FROM Series');
+      const response = await fetch(`${API_BASE_URL}/content/${type}`);
+      const contentList = await handleResponse(response);
 
-      if (films.length === 0 && series.length === 0) {
-          return sendJSONResponse(res, 404, { error: 'No content found.' });
-      }
-
-      const content = { films, series };
-
-      if (req.accepts('xml')) {
-          return sendXMLResponse(res, 200, content);
-      }
-      sendJSONResponse(res, 200, content);
+      const container = document.querySelector(
+          type === 'film' ? ".moviesContainer" : ".seriesContainer"
+      );
+      container.innerHTML = "";
+      contentList.forEach(content => {
+          const contentElement = document.createElement("div");
+          contentElement.classList.add("contentElement");
+          contentElement.innerHTML = `
+              <img src="${content.imageUrl || 'default.jpg'}" alt="${content.title}">
+              <p>${content.title}</p>
+              <p>${content.description}</p>
+              <div class="actionButtons">
+                  <button class="update" data-id="${content.id}" data-type="${type}">Update</button>
+                  <button class="delete" data-id="${content.id}" data-type="${type}">Delete</button>
+              </div>
+          `;
+          container.appendChild(contentElement);
+      });
   } catch (error) {
-      sendJSONResponse(res, 500, { error: 'Error fetching content.', details: error.message });
+      console.error(`Error fetching ${type}:`, error);
   }
 };
 
@@ -149,96 +157,101 @@ exports.getContentById = async (req, res) => {
   }
 };
 
-exports.createContent = async (req, res) => {
-  const { type } = req.params;
-  const { title, description, subtitles, minimumAge } = req.body;
-
-  if (!title || !description) {
-      return sendJSONResponse(res, 400, { error: 'Title and description are required.' });
-  }
-
-  if (type !== 'film' && type !== 'series') {
-      return sendJSONResponse(res, 400, { error: 'Invalid content type. Use "film" or "series".' });
-  }
-
-  const table = type === 'film' ? 'Film' : 'Series';
-
+const addContent = async (type, contentData) => {
   try {
-      const [result] = await db.execute(
-          `INSERT INTO ${table} (Title, Description, Subtitles, MinimumAge) VALUES (?, ?, ?, ?)`,
-          [title, description, subtitles, minimumAge]
-      );
+      const response = await fetch(`${API_BASE_URL}/content/${type}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(contentData),
+      });
+      const content = await handleResponse(response);
+      fetchContent(type); 
+  } catch (error) {
+      console.error(`Error adding ${type}:`, error);
+  }
+};
 
-      const response = {
-          message: `${type.charAt(0).toUpperCase() + type.slice(1)} created successfully.`,
-          id: result.insertId,
+const updateContent = async (type, contentId, updatedData) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/content/${type}/${contentId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData),
+      });
+      const content = await handleResponse(response);
+      fetchContent(type); 
+  } catch (error) {
+      console.error(`Error updating ${type}:`, error);
+  }
+};
+
+const deleteContent = async (type, contentId) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/content/${type}/${contentId}`, {
+          method: 'DELETE',
+      });
+      const result = await handleResponse(response);
+      fetchContent(type); 
+  } catch (error) {
+      console.error(`Error deleting ${type}:`, error);
+  }
+};
+
+document.querySelector("#addMovie").addEventListener("click", () => {
+  const newMovieData = {
+      title: "New Movie",
+      description: "A great movie",
+      subtitles: "English",
+      minimumAge: 13,
+  };
+  addContent("film", newMovieData);
+});
+
+document.querySelector("#addSeries").addEventListener("click", () => {
+  const newSeriesData = {
+      title: "New Series",
+      description: "An amazing series",
+      subtitles: "English",
+      minimumAge: 16,
+  };
+  addContent("series", newSeriesData);
+});
+
+document.querySelector(".moviesContainer").addEventListener("click", (event) => {
+  const contentId = event.target.dataset.id;
+  const type = event.target.dataset.type;
+  if (event.target.classList.contains("update")) {
+      const updatedData = {
+          title: "Updated Movie Title",
+          description: "Updated movie description",
+          subtitles: "Spanish",
+          minimumAge: 15,
       };
-
-      if (req.accepts('xml')) {
-          return sendXMLResponse(res, 201, response);
-      }
-      sendJSONResponse(res, 201, response);
-  } catch (error) {
-      sendJSONResponse(res, 500, { error: `Error creating ${type}.`, details: error.message });
+      updateContent(type, contentId, updatedData);
+  } else if (event.target.classList.contains("delete")) {
+      deleteContent(type, contentId);
   }
-};
+});
 
-exports.updateContent = async (req, res) => {
-  const { type, id } = req.params;
-  const { title, description, subtitles, minimumAge } = req.body;
-
-  if (type !== 'film' && type !== 'series') {
-      return sendJSONResponse(res, 400, { error: 'Invalid content type. Use "film" or "series".' });
+document.querySelector(".seriesContainer").addEventListener("click", (event) => {
+  const contentId = event.target.dataset.id;
+  const type = event.target.dataset.type;
+  if (event.target.classList.contains("update")) {
+      const updatedData = {
+          title: "Updated Series Title",
+          description: "Updated series description",
+          subtitles: "French",
+          minimumAge: 18,
+      };
+      updateContent(type, contentId, updatedData);
+  } else if (event.target.classList.contains("delete")) {
+      deleteContent(type, contentId);
   }
+});
 
-  const table = type === 'film' ? 'Film' : 'Series';
+fetchContent("film");
+fetchContent("series");
 
-  try {
-      const [result] = await db.execute(
-          `UPDATE ${table} SET Title = ?, Description = ?, Subtitles = ?, MinimumAge = ? WHERE ${table}ID = ?`,
-          [title, description, subtitles, minimumAge, id]
-      );
-
-      if (result.affectedRows === 0) {
-          return sendJSONResponse(res, 404, { error: `${type.charAt(0).toUpperCase() + type.slice(1)} not found.` });
-      }
-
-      const response = { message: `${type.charAt(0).toUpperCase() + type.slice(1)} updated successfully.` };
-
-      if (req.accepts('xml')) {
-          return sendXMLResponse(res, 200, response);
-      }
-      sendJSONResponse(res, 200, response);
-  } catch (error) {
-      sendJSONResponse(res, 500, { error: `Error updating ${type}.`, details: error.message });
-  }
-};
-
-exports.deleteContent = async (req, res) => {
-  const { type, id } = req.params;
-
-  if (type !== 'film' && type !== 'series') {
-      return sendJSONResponse(res, 400, { error: 'Invalid content type. Use "film" or "series".' });
-  }
-
-  const table = type === 'film' ? 'Film' : 'Series';
-
-  try {
-      const [result] = await db.execute(`DELETE FROM ${table} WHERE ${table}ID = ?`, [id]);
-      if (result.affectedRows === 0) {
-          return sendJSONResponse(res, 404, { error: `${type.charAt(0).toUpperCase() + type.slice(1)} not found.` });
-      }
-
-      const response = { message: `${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully.` };
-
-      if (req.accepts('xml')) {
-          return sendXMLResponse(res, 200, response);
-      }
-      sendJSONResponse(res, 200, response);
-  } catch (error) {
-      sendJSONResponse(res, 500, { error: `Error deleting ${type}.`, details: error.message });
-  }
-};
 
 async function fetchAllGenres() {
   try {
@@ -329,22 +342,32 @@ async function deleteGenre(id) {
   }
 }
 
-async function fetchHistoryByProfile(profileId) {
+const fetchHistory = async () => {
   try {
-      const response = await fetch(`${API_BASE_URL}/history/${profileId}`, {
-          method: 'GET',
-          headers: {
-              'Accept': 'application/json, application/xml' 
-          }
-      });
+      const response = await fetch(`${API_BASE_URL}/history`);
+      const historyItems = await handleResponse(response);
 
-      const data = await handleResponse(response);
-      console.log('History:', data);
-      return data;
+      const historyContainer = document.querySelector(".historyContainer");
+      historyContainer.innerHTML = "";
+      historyItems.forEach(item => {
+          const historyElement = document.createElement("div");
+          historyElement.classList.add("historyElement");
+          historyElement.innerHTML = `
+              <img src="${item.imageUrl}" alt="${item.title}">
+              <p>${item.title}</p>
+              <div class="actionButtons">
+                  <button class="update" data-id="${item.id}">Update</button>
+                  <button class="delete" data-id="${item.id}">Delete</button>
+              </div>
+          `;
+          historyContainer.appendChild(historyElement);
+      });
   } catch (error) {
-      console.error('Error fetching history by profile:', error);
+      console.error("Error fetching history:", error);
   }
-}
+};
+
+fetchHistory();
 
 async function login(email, password) {
   try {
@@ -420,24 +443,71 @@ async function fetchAllProfiles() {
   }
 }
 
-async function createProfile(userId, name, age, preferences) {
+const fetchProfiles = async () => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/profiles`);
+      const profiles = await handleResponse(response);
+
+      const profileContainer = document.querySelector(".profileContainer");
+      profileContainer.innerHTML = "";
+      profiles.forEach(profile => {
+          const profileElement = document.createElement("div");
+          profileElement.classList.add("profile");
+          profileElement.innerHTML = `
+              <img src="${profile.imageUrl}" alt="${profile.name}">
+              <p>${profile.name}</p>
+              <div class="actionButtons">
+                  <button class="update" data-id="${profile.id}">Update</button>
+                  <button class="delete" data-id="${profile.id}">Delete</button>
+              </div>
+          `;
+          profileContainer.appendChild(profileElement);
+      });
+  } catch (error) {
+      console.error("Error fetching profiles:", error);
+  }
+};
+
+const addProfile = async (profileData) => {
   try {
       const response = await fetch(`${API_BASE_URL}/profiles`, {
           method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, application/xml'  
-          },
-          body: JSON.stringify({ userId, name, age, preferences })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profileData),
       });
-
-      const data = await handleResponse(response);
-      console.log('Profile creation response:', data);
-      return data;
+      const profile = await handleResponse(response);
+      fetchProfiles(); 
   } catch (error) {
-      console.error('Error creating profile:', error);
+      console.error("Error adding profile:", error);
   }
-}
+};
+
+const updateProfile = async (profileId, updatedData) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/profiles/${profileId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData),
+      });
+      const profile = await handleResponse(response);
+      fetchProfiles(); 
+  } catch (error) {
+      console.error("Error updating profile:", error);
+  }
+};
+
+const deleteProfile = async (profileId) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/profiles/${profileId}`, {
+          method: 'DELETE',
+      });
+      const result = await handleResponse(response);
+      fetchProfiles(); 
+  } catch (error) {
+      console.error("Error deleting profile:", error);
+  }
+};
+
 
 async function getProfileById(profileId) {
   try {
@@ -456,58 +526,44 @@ async function getProfileById(profileId) {
   }
 }
 
-async function updateProfile(profileId, name, age, preferences) {
-  try {
-      const response = await fetch(`${API_BASE_URL}/profiles/${profileId}`, {
-          method: 'PUT',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, application/xml'  
-          },
-          body: JSON.stringify({ name, age, preferences })
-      });
 
-      const data = await handleResponse(response);
-      console.log('Profile update response:', data);
-      return data;
-  } catch (error) {
-      console.error('Error updating profile:', error);
+document.querySelector("#addProfile").addEventListener("click", () => {
+  const newProfileData = { name: "New Profile", imageUrl: "new_profile.jpg" }; 
+  addProfile(newProfileData);
+});
+
+document.querySelector(".profileContainer").addEventListener("click", (event) => {
+  const profileId = event.target.dataset.id;
+  if (event.target.classList.contains("update")) {
+      const updatedData = { name: "Updated Profile", imageUrl: "updated_profile.jpg" }; 
+      updateProfile(profileId, updatedData);
+  } else if (event.target.classList.contains("delete")) {
+      deleteProfile(profileId);
   }
-}
+});
 
-async function deleteProfile(profileId) {
+fetchProfiles();
+
+const fetchRecommended = async () => {
   try {
-      const response = await fetch(`${API_BASE_URL}/profiles/${profileId}`, {
-          method: 'DELETE',
-          headers: {
-              'Accept': 'application/json, application/xml' 
-          }
+      const response = await fetch(`${API_BASE_URL}/recommendations`);
+      const recommendations = await handleResponse(response);
+
+      const container = document.querySelector(".recommendedContainer");
+      container.innerHTML = "";
+      recommendations.forEach(recommendation => {
+          const recommendationElement = document.createElement("div");
+          recommendationElement.classList.add("recommendedElement");
+          recommendationElement.innerHTML = `
+              <img src="${recommendation.imageUrl}" alt="${recommendation.title}">
+              <p>${recommendation.title}</p>
+          `;
+          container.appendChild(recommendationElement);
       });
-
-      const data = await handleResponse(response);
-      console.log('Profile deletion response:', data);
-      return data;
   } catch (error) {
-      console.error('Error deleting profile:', error);
+      console.error("Error fetching recommendations:", error);
   }
-}
-
-async function getRecommendations(profileId) {
-  try {
-      const response = await fetch(`${API_BASE_URL}/recommendations/${profileId}`, {
-          method: 'GET',
-          headers: {
-              'Accept': 'application/json, application/xml'  
-          }
-      });
-
-      const data = await handleResponse(response);
-      console.log('Recommendations:', data);
-      return data;
-  } catch (error) {
-      console.error('Error fetching recommendations:', error);
-  }
-}
+};
 
 async function createRecommendation(profileId, mediaType, mediaId) {
   try {
@@ -564,171 +620,249 @@ async function deleteRecommendation(recommendationId) {
   }
 }
 
-exports.getSubscriptionById = async (req, res) => {
+fetchRecommended();
+
+const fetchSubscriptions = async () => {
   try {
-      const [subscription] = await db.execute('SELECT * FROM Subscription WHERE SubscriptionID = ?', [req.params.id]);
-      if (subscription.length === 0) {
-          return handleResponse(res, 404, { error: 'Subscription not found.' });
-      }
-      handleResponse(res, 200, subscription[0]);
+      const response = await fetch(`${API_BASE_URL}/subscriptions`);
+      const subscriptions = await handleResponse(response);
+
+      const container = document.querySelector("#subscriptions ul");
+      container.innerHTML = "";
+      subscriptions.forEach(subscription => {
+          const subscriptionElement = document.createElement("li");
+          subscriptionElement.innerHTML = `
+              ${subscription.plan} : €${subscription.price}/month
+              <div class="actionButtons">
+                  <button class="update" data-id="${subscription.id}">Update</button>
+                  <button class="delete" data-id="${subscription.id}">Delete</button>
+              </div>
+          `;
+          container.appendChild(subscriptionElement);
+      });
   } catch (error) {
-      handleResponse(res, 500, { error: 'Error fetching subscription.', details: error.message });
-  }
-};
-
-exports.createSubscription = async (req, res) => {
-  const { subscriptionType, discount } = req.body;
-  if (!subscriptionType) {
-      return handleResponse(res, 400, { error: 'Subscription type is required.' });
-  }
-
-  try {
-      const [result] = await db.execute('INSERT INTO Subscription (SubscriptionType, Discount) VALUES (?, ?)', [subscriptionType, discount]);
-      const response = { message: 'Subscription created successfully.', subscriptionId: result.insertId };
-      handleResponse(res, 201, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error creating subscription.', details: error.message });
-  }
-};
-
-exports.updateSubscription = async (req, res) => {
-  const { subscriptionType, discount } = req.body;
-  try {
-      const [result] = await db.execute('UPDATE Subscription SET SubscriptionType = ?, Discount = ? WHERE SubscriptionID = ?', [subscriptionType, discount, req.params.id]);
-      if (result.affectedRows === 0) {
-          return handleResponse(res, 404, { error: 'Subscription not found.' });
-      }
-
-      const response = { message: 'Subscription updated successfully.' };
-      handleResponse(res, 200, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error updating subscription.', details: error.message });
-  }
-};
-
-exports.deleteSubscription = async (req, res) => {
-  try {
-      const [result] = await db.execute('DELETE FROM Subscription WHERE SubscriptionID = ?', [req.params.id]);
-      if (result.affectedRows === 0) {
-          return handleResponse(res, 404, { error: 'Subscription not found.' });
-      }
-
-      const response = { message: 'Subscription deleted successfully.' };
-      handleResponse(res, 200, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error deleting subscription.', details: error.message });
-  }
-};
-
-exports.getWatchingFilm = async (req, res) => {
-  try {
-      const [watchingFilm] = await db.execute('SELECT * FROM WatchingFilm WHERE ProfileID = ? AND FilmID = ?', [req.params.profileId, req.params.filmId]);
-      if (watchingFilm.length === 0) {
-          return handleResponse(res, 404, { error: 'Watching film record not found.' });
-      }
-      handleResponse(res, 200, watchingFilm[0]);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error fetching watching film record.', details: error.message });
-  }
-};
-
-exports.createWatchingFilm = async (req, res) => {
-  const { profileId, filmId } = req.body;
-  if (!profileId || !filmId) {
-      return handleResponse(res, 400, { error: 'ProfileId and FilmId are required.' });
-  }
-
-  try {
-      const [result] = await db.execute('INSERT INTO WatchingFilm (ProfileID, FilmID) VALUES (?, ?)', [profileId, filmId]);
-      const response = { message: 'Watching film record created successfully.', watchingFilmId: result.insertId };
-      handleResponse(res, 201, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error creating watching film record.', details: error.message });
-  }
-};
-
-exports.updateWatchingFilm = async (req, res) => {
-  const { profileId, filmId } = req.body;
-  try {
-      const [result] = await db.execute('UPDATE WatchingFilm SET FilmID = ? WHERE ProfileID = ?', [filmId, profileId]);
-      if (result.affectedRows === 0) {
-          return handleResponse(res, 404, { error: 'Watching film record not found.' });
-      }
-
-      const response = { message: 'Watching film record updated successfully.' };
-      handleResponse(res, 200, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error updating watching film record.', details: error.message });
-  }
-};
-
-exports.deleteWatchingFilm = async (req, res) => {
-  try {
-      const [result] = await db.execute('DELETE FROM WatchingFilm WHERE ProfileID = ? AND FilmID = ?', [req.params.profileId, req.params.filmId]);
-      if (result.affectedRows === 0) {
-          return handleResponse(res, 404, { error: 'Watching film record not found.' });
-      }
-
-      const response = { message: 'Watching film record deleted successfully.' };
-      handleResponse(res, 200, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error deleting watching film record.', details: error.message });
-  }
-};
-
-exports.getWatchingSeries = async (req, res) => {
-  try {
-      const [watchingSeries] = await db.execute('SELECT * FROM WatchingSeries WHERE ProfileID = ? AND SeriesID = ?', [req.params.profileId, req.params.seriesId]);
-      if (watchingSeries.length === 0) {
-          return handleResponse(res, 404, { error: 'Watching series record not found.' });
-      }
-      handleResponse(res, 200, watchingSeries[0]);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error fetching watching series record.', details: error.message });
-  }
-};
-
-exports.createWatchingSeries = async (req, res) => {
-  const { profileId, seriesId } = req.body;
-  if (!profileId || !seriesId) {
-      return handleResponse(res, 400, { error: 'ProfileId and SeriesId are required.' });
-  }
-
-  try {
-      const [result] = await db.execute('INSERT INTO WatchingSeries (ProfileID, SeriesID) VALUES (?, ?)', [profileId, seriesId]);
-      const response = { message: 'Watching series record created successfully.', watchingSeriesId: result.insertId };
-      handleResponse(res, 201, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error creating watching series record.', details: error.message });
-  }
-};
-
-exports.updateWatchingSeries = async (req, res) => {
-  const { profileId, seriesId } = req.body;
-  try {
-      const [result] = await db.execute('UPDATE WatchingSeries SET SeriesID = ? WHERE ProfileID = ?', [seriesId, profileId]);
-      if (result.affectedRows === 0) {
-          return handleResponse(res, 404, { error: 'Watching series record not found.' });
-      }
-
-      const response = { message: 'Watching series record updated successfully.' };
-      handleResponse(res, 200, response);
-  } catch (error) {
-      handleResponse(res, 500, { error: 'Error updating watching series record.', details: error.message });
+      console.error("Error fetching subscriptions:", error);
   }
 };
 
 
-exports.deleteWatchingSeries = async (req, res) => {
+const addSubscription = async (subscriptionData) => {
   try {
-      const [result] = await db.execute('DELETE FROM WatchingSeries WHERE ProfileID = ? AND SeriesID = ?', [req.params.profileId, req.params.seriesId]);
-      if (result.affectedRows === 0) {
-          return handleResponse(res, 404, { error: 'Watching series record not found.' });
-      }
-
-      const response = { message: 'Watching series record deleted successfully.' };
-      handleResponse(res, 200, response);
+      const response = await fetch(`${API_BASE_URL}/subscriptions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(subscriptionData),
+      });
+      const subscription = await handleResponse(response);
+      fetchSubscriptions(); 
   } catch (error) {
-      handleResponse(res, 500, { error: 'Error deleting watching series record.', details: error.message });
+      console.error("Error adding subscription:", error);
   }
 };
+
+const updateSubscription = async (subscriptionId, updatedData) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/subscriptions/${subscriptionId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData),
+      });
+      const subscription = await handleResponse(response);
+      fetchSubscriptions(); 
+  } catch (error) {
+      console.error("Error updating subscription:", error);
+  }
+};
+
+const deleteSubscription = async (subscriptionId) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/subscriptions/${subscriptionId}`, {
+          method: 'DELETE',
+      });
+      const result = await handleResponse(response);
+      fetchSubscriptions(); 
+  } catch (error) {
+      console.error("Error deleting subscription:", error);
+  }
+};
+
+document.querySelector("#addSubscription").addEventListener("click", () => {
+  const newSubscriptionData = { plan: "Premium", price: 19.99 }; 
+  addSubscription(newSubscriptionData);
+});
+
+document.querySelector("#subscriptions ul").addEventListener("click", (event) => {
+  const subscriptionId = event.target.dataset.id;
+  if (event.target.classList.contains("update")) {
+      const updatedData = { plan: "Updated Premium", price: 24.99 }; 
+      updateSubscription(subscriptionId, updatedData);
+  } else if (event.target.classList.contains("delete")) {
+      deleteSubscription(subscriptionId);
+  }
+});
+
+fetchSubscriptions();
+
+const fetchMoviesWatching = async () => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingFilm`);
+      const movies = await handleResponse(response);
+
+      const container = document.querySelector(".moviesWatchingContainer");
+      container.innerHTML = "";
+      movies.forEach(movie => {
+          const movieElement = document.createElement("div");
+          movieElement.classList.add("moviesWatchingElement");
+          movieElement.innerHTML = `
+              <img src="${movie.imageUrl}" alt="${movie.title}">
+              <p>${movie.title}</p>
+              <div class="actionButtons">
+                  <button class="update" data-id="${movie.id}">Update</button>
+                  <button class="delete" data-id="${movie.id}">Delete</button>
+              </div>
+          `;
+          container.appendChild(movieElement);
+      });
+  } catch (error) {
+      console.error("Error fetching movies watching:", error);
+  }
+};
+
+const addMovieWatching = async (movieData) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingFilm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(movieData),
+      });
+      const movie = await handleResponse(response);
+      fetchMoviesWatching(); 
+  } catch (error) {
+      console.error("Error adding movie to watching:", error);
+  }
+};
+
+const updateMovieWatching = async (movieId, updatedData) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingFilm/${movieId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData),
+      });
+      const movie = await handleResponse(response);
+      fetchMoviesWatching();
+  } catch (error) {
+      console.error("Error updating movie:", error);
+  }
+};
+
+const deleteMovieWatching = async (movieId) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingFilm/${movieId}`, {
+          method: 'DELETE',
+      });
+      const result = await handleResponse(response);
+      fetchMoviesWatching(); 
+  } catch (error) {
+      console.error("Error deleting movie:", error);
+  }
+};
+
+document.querySelector("#addMoviesWatching").addEventListener("click", () => {
+  const newMovieData = { title: "New Movie", imageUrl: "new_movie.jpg" }; 
+  addMovieWatching(newMovieData);
+});
+
+document.querySelector(".moviesWatchingContainer").addEventListener("click", (event) => {
+  const movieId = event.target.dataset.id;
+  if (event.target.classList.contains("update")) {
+      const updatedData = { title: "Updated Movie", imageUrl: "updated_movie.jpg" };
+      updateMovieWatching(movieId, updatedData);
+  } else if (event.target.classList.contains("delete")) {
+      deleteMovieWatching(movieId);
+  }
+});
+
+fetchMoviesWatching();
+
+const fetchWatchingSeries = async () => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingSeries`);
+      const series = await handleResponse(response);
+
+      const container = document.querySelector(".watchingSeriesContainer");
+      container.innerHTML = "";
+      series.forEach(seriesItem => {
+          const seriesElement = document.createElement("div");
+          seriesElement.classList.add("watchingSeriesElement");
+          seriesElement.innerHTML = `
+              <img src="${seriesItem.imageUrl}" alt="${seriesItem.title}">
+              <p>${seriesItem.title}</p>
+              <div class="actionButtons">
+                  <button class="update" data-id="${seriesItem.id}">Update</button>
+                  <button class="delete" data-id="${seriesItem.id}">Delete</button>
+              </div>
+          `;
+          container.appendChild(seriesElement);
+      });
+  } catch (error) {
+      console.error("Error fetching watching series:", error);
+  }
+};
+
+const addWatchingSeries = async (seriesData) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingSeries`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(seriesData),
+      });
+      const series = await handleResponse(response);
+      fetchWatchingSeries(); 
+  } catch (error) {
+      console.error("Error adding watching series:", error);
+  }
+};
+
+const updateWatchingSeries = async (seriesId, updatedData) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingSeries/${seriesId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedData),
+      });
+      const series = await handleResponse(response);
+      fetchWatchingSeries(); 
+  } catch (error) {
+      console.error("Error updating watching series:", error);
+  }
+};
+
+const deleteWatchingSeries = async (seriesId) => {
+  try {
+      const response = await fetch(`${API_BASE_URL}/watchingSeries/${seriesId}`, {
+          method: 'DELETE',
+      });
+      const result = await handleResponse(response);
+      fetchWatchingSeries(); 
+  } catch (error) {
+      console.error("Error deleting watching series:", error);
+  }
+};
+
+document.querySelector("#addWatchingSeries").addEventListener("click", () => {
+  const newSeriesData = { title: "New Series", imageUrl: "new_series.jpg" }; 
+  addWatchingSeries(newSeriesData);
+});
+
+document.querySelector(".watchingSeriesContainer").addEventListener("click", (event) => {
+  const seriesId = event.target.dataset.id;
+  if (event.target.classList.contains("update")) {
+      const updatedData = { title: "Updated Series", imageUrl: "updated_series.jpg" }; 
+      updateWatchingSeries(seriesId, updatedData);
+  } else if (event.target.classList.contains("delete")) {
+      deleteWatchingSeries(seriesId);
+  }
+});
+
+fetchWatchingSeries();
