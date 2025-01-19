@@ -1,0 +1,31 @@
+Registration and Activation:  
+As a new user, I want to sign up using an email and password so that I can create an account.  
+As a new user, I want to receive an activation email to verify my account before logging in.  
+As a user with a blocked account, I want to reset my password via email so that I can regain access.  
+
+Subscription and Discounts:  
+As a user, I want to have a 7-day free trial period before my paid subscription starts.  
+As a user, I want to choose between SD, HD, and UHD subscription plans, each with its respective monthly cost.  
+As a user, I want to invite another person to join the platform, where both of us receive a 2 euro discount if we have active paid accounts.  
+
+Profile Management:  
+As a user logging in for the first time, I want to create up to 4 profiles so that I can personalize my experience.  
+As a user, I want to configure each profile with a name, photo, age, and language preferences.  
+As a user, I want to change the language preference in my profile settings whenever needed.  
+
+Preferences:  
+As a user, I want to set my preferences for series or films, genres, minimum age, and viewing classifications to tailor my experience.  
+As a user, I want to have the flexibility to adjust my preferences at any time.  
+
+Watchlist:  
+As a user, I want to add films or series to a watchlist so that I can view them later.  
+As a user, I want films or series I have already watched to be automatically removed from my watchlist.  
+
+Watching Content:  
+As a user, I want to watch a film or series with the ability to pause and resume at a later time.  
+As a user, I want to enable subtitles, ideally in the language I have chosen as my preference.  
+As a user, I want to receive personalized content recommendations and offers based on my viewing history.  
+
+Series Viewing:  
+As a user finishing an episode, I want the next episode to automatically play.  
+As a user watching the credits of a series, I want to be offered the option to view a similar or popular series.  
